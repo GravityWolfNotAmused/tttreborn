@@ -3,6 +3,7 @@ using System.Linq;
 
 using Sandbox;
 
+using TTTReborn.Events;
 using TTTReborn.Globalization;
 using TTTReborn.Globals;
 using TTTReborn.Map;
@@ -64,7 +65,7 @@ namespace TTTReborn.Gamemode
         {
             Round.Finish();
             Round = round;
-            Event.Run("tttreborn.round.changed", round);
+            Event.Run(TTTEvents.Round.OnChanged, round);
             Round.Start();
         }
 

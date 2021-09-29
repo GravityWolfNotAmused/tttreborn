@@ -1,5 +1,6 @@
 using Sandbox;
 
+using TTTReborn.Events;
 using TTTReborn.Rounds;
 
 namespace TTTReborn.Map
@@ -29,7 +30,7 @@ namespace TTTReborn.Map
         /// </summary>
         public void FireSettingsSpawn() => SettingsSpawned.Fire(this);
 
-        [Event("tttreborn.round.changed")]
+        [TTTEvents.Round.OnChanged]
         private void FireRoundChange(BaseRound round)
         {
             switch (round)

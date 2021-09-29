@@ -4,6 +4,7 @@ using System.Text.Json;
 
 using Sandbox;
 
+using TTTReborn.Events;
 using TTTReborn.Globals;
 using TTTReborn.Items;
 using TTTReborn.UI;
@@ -82,7 +83,7 @@ namespace TTTReborn.Player
 
                 _shop = value;
 
-                Event.Run("tttreborn.shop.change");
+                Event.Run(TTTEvents.Shop.OnChanged);
             }
         }
         private Shop _shop;

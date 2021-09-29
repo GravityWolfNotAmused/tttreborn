@@ -6,6 +6,7 @@ using Sandbox;
 using Sandbox.UI;
 using Sandbox.UI.Construct;
 
+using TTTReborn.Events;
 using TTTReborn.Globals;
 using TTTReborn.Items;
 using TTTReborn.Player;
@@ -95,13 +96,13 @@ namespace TTTReborn.UI
             }
         }
 
-        [Event("tttreborn.player.inventory.clear")]
+        [TTTEvents.Inventory.OnInventoryClear]
         private void OnCarriableItemClear()
         {
             DeleteChildren(true);
         }
 
-        [Event("tttreborn.player.carriableitem.pickup")]
+        [TTTEvents.Inventory.OnItemPickedUp]
         private void OnCarriableItemPickup(ICarriableItem carriable)
         {
             if (carriable == null)
@@ -124,7 +125,7 @@ namespace TTTReborn.UI
             Enabled = Children.Any();
         }
 
-        [Event("tttreborn.player.carriableitem.drop")]
+        [TTTEvents.Inventory.OnItemDropped]
         private void OnCarriableItemDrop(ICarriableItem carriable)
         {
             foreach (Sandbox.UI.Panel child in Children)
@@ -141,7 +142,7 @@ namespace TTTReborn.UI
             Enabled = Children.Any();
         }
 
-        [Event("tttreborn.player.spectating.change")]
+        [TTTEvents.Player.OnChangedToSpectate]
         private void OnSpectatingChange(TTTPlayer player)
         {
             OnCarriableItemClear();

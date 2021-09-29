@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 using Sandbox;
 
+using TTTReborn.Events;
 using TTTReborn.Teams;
 
 namespace TTTReborn.Player
@@ -130,7 +131,7 @@ namespace TTTReborn.Player
             ConsoleSystem.Run((toggle ? "+" : "-") + "iv_voice");
         }
 
-        [Event("tttreborn.player.role.onselect")]
+        [TTTEvents.Player.OnRoleSelected]
         private static void OnSelectRole(TTTPlayer player)
         {
             if (!Host.IsServer)

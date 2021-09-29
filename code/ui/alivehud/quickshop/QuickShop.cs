@@ -4,6 +4,7 @@ using Sandbox;
 using Sandbox.UI;
 using Sandbox.UI.Construct;
 
+using TTTReborn.Events;
 using TTTReborn.Items;
 using TTTReborn.Player;
 
@@ -148,10 +149,10 @@ namespace TTTReborn.UI
             }
         }
 
-        [Event("tttreborn.shop.change")]
+        [TTTEvents.Shop.OnChanged]
         public static void OnShopChanged()
         {
-            QuickShop.Instance?.Reload();
+            Instance?.Reload();
         }
 
         public override void Tick()
