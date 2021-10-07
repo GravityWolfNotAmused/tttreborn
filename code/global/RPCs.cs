@@ -24,6 +24,18 @@ namespace TTTReborn.Globals
         }
 
         [ClientRpc]
+        public static void ClientOnPlayerConnected(Client client)
+        {
+            Event.Run(TTTEvent.Player.Connected, client);
+        }
+
+        [ClientRpc]
+        public static void ClientOnPlayerDisconnect(ulong steamId, NetworkDisconnectionReason reason)
+        {
+            Event.Run(TTTEvent.Player.Disconnected, steamId, reason);
+        }
+
+        [ClientRpc]
         public static void ClientOnPlayerSpawned(TTTPlayer player)
         {
             if (!player.IsValid())
@@ -57,14 +69,14 @@ namespace TTTReborn.Globals
             player.SetRole(Utils.GetObjectByType<TTTRole>(Utils.GetTypeByName<TTTRole>(roleName)), TeamFunctions.GetTeam(teamName));
             player.SendRoleButtonsToClient();
 
-            Client client = player.GetClientOwner();
+            Client client = player.Client;
 
             if (client == null || !client.IsValid())
             {
                 return;
             }
 
-            Scoreboard.Instance.UpdatePlayer(client);
+            Scoreboard.Instance.UpdateClient(client);
         }
 
         [ClientRpc]
@@ -90,15 +102,16 @@ namespace TTTReborn.Globals
                 InspectMenu.Instance.SetPlayerData(playerCorpse);
             }
 
-            Scoreboard.Instance.UpdatePlayer(deadPlayer.GetClientOwner());
+            Client deadClient = deadPlayer.Client;
+
+            Scoreboard.Instance.UpdateClient(deadClient);
 
             if (!confirmPlayer.IsValid())
             {
                 return;
             }
 
-            Client confirmClient = confirmPlayer.GetClientOwner();
-            Client deadClient = deadPlayer.GetClientOwner();
+            Client confirmClient = confirmPlayer.Client;
 
             InfoFeed.Current?.AddEntry(
                 confirmClient,
@@ -126,7 +139,7 @@ namespace TTTReborn.Globals
 
             missingInActionPlayer.IsMissingInAction = true;
 
-            Scoreboard.Instance.UpdatePlayer(missingInActionPlayer.GetClientOwner());
+            Scoreboard.Instance.UpdateClient(missingInActionPlayer.Client);
         }
 
         [ClientRpc]

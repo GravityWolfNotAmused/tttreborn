@@ -3,6 +3,7 @@ using System.Linq;
 
 using Sandbox;
 
+using TTTReborn.Events;
 using TTTReborn.Globalization;
 using TTTReborn.Globals;
 using TTTReborn.Map;
@@ -34,6 +35,8 @@ namespace TTTReborn.Gamemode
 
             if (IsServer)
             {
+                ShopManager.Load();
+
                 new Hud();
             }
         }
@@ -102,9 +105,13 @@ namespace TTTReborn.Gamemode
             }
             */
 
+            Event.Run(TTTEvent.Player.Connected, client);
+
+            RPCs.ClientOnPlayerConnected(client);
+
             TTTPlayer player = new();
             client.Pawn = player;
-            player.InitialRespawn();
+            player.InitialSpawn();
 
             base.ClientJoined(client);
         }
@@ -114,6 +121,10 @@ namespace TTTReborn.Gamemode
             Log.Info(client.Name + " left, checking minimum player count...");
 
             Round.OnPlayerLeave(client.Pawn as TTTPlayer);
+
+            Event.Run(TTTEvent.Player.Disconnected, client.SteamId, reason);
+
+            RPCs.ClientOnPlayerDisconnect(client.SteamId, reason);
 
             base.ClientDisconnect(client, reason);
         }
