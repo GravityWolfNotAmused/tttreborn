@@ -1,5 +1,3 @@
-using System;
-
 using Sandbox;
 using Sandbox.UI;
 using Sandbox.UI.Construct;
@@ -15,7 +13,7 @@ namespace TTTReborn.UI
         private Panel _breathBar;
         private Label _breathLabel;
 
-        public BreathIndicator()
+        public BreathIndicator() : base()
         {
             Instance = this;
 
@@ -32,6 +30,9 @@ namespace TTTReborn.UI
             _breathLabel.AddClass("breath-label");
 
             Enabled = true;
+
+            Style.ZIndex = -1;
+            Style.Dirty();
         }
 
         public override void Tick()

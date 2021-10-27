@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using Sandbox;
 
 using TTTReborn.Globals;
-using TTTReborn.Items;
 using TTTReborn.Player;
 using TTTReborn.Teams;
 
 namespace TTTReborn.Roles
 {
-    [Role("Traitor")]
+    [Role("traitor")]
     public class TraitorRole : TTTRole
     {
         public override Color Color => Color.FromBytes(223, 41, 53);
@@ -30,8 +29,8 @@ namespace TTTReborn.Roles
             {
                 foreach (TTTPlayer otherPlayer in player.Team.Members)
                 {
-                    RPCs.ClientSetRole(To.Single(otherPlayer), player, player.Role.Name);
-                    RPCs.ClientSetRole(To.Single(player), otherPlayer, otherPlayer.Role.Name);
+                    player.SendClientRole(To.Single(otherPlayer));
+                    otherPlayer.SendClientRole(To.Single(player));
                 }
 
                 foreach (TTTPlayer otherPlayer in Utils.GetPlayers())

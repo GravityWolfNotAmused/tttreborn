@@ -27,13 +27,13 @@ namespace TTTReborn.UI
 
         public new bool Enabled
         {
-            get => base._isEnabled;
+            get => base.IsEnabled;
             set
             {
-                base._isEnabled = value;
+                base.IsEnabled = value;
 
-                SetClass("fade-in", base._isEnabled);
-                _quickshopContainer.SetClass("pop-in", base._isEnabled);
+                SetClass("fade-in", base.IsEnabled);
+                _quickshopContainer.SetClass("pop-in", base.IsEnabled);
             }
         }
 
@@ -154,6 +154,24 @@ namespace TTTReborn.UI
             QuickShop.Instance?.Reload();
         }
 
+        [Event(TTTEvent.Player.Role.Select)]
+        public static void OnRoleChanged(TTTPlayer player)
+        {
+            QuickShop quickShop = QuickShop.Instance;
+
+            if (quickShop != null)
+            {
+                if (player.Shop == null || !player.Shop.Accessable())
+                {
+                    quickShop.Enabled = false;
+                }
+                else if (quickShop.Enabled)
+                {
+                    quickShop.Update();
+                }
+            }
+        }
+
         public override void Tick()
         {
             base.Tick();
@@ -181,35 +199,28 @@ namespace TTTReborn.Player
 
     public partial class TTTPlayer
     {
-        [ClientCmd("+ttt_quickshop")]
-        public static void OpenQuickshop()
+        public void TickPlayerShop()
         {
-            if (QuickShop.Instance == null)
+            if (!IsClient || QuickShop.Instance == null)
             {
                 return;
             }
 
-            Shop shop = (Local.Pawn as TTTPlayer).Shop;
-
-            if (shop == null || !shop.Accessable())
+            if (Input.Released(InputButton.View))
             {
-                return;
+                QuickShop.Instance.Enabled = false;
+                QuickShop.Instance.Update();
             }
-
-            QuickShop.Instance.Enabled = true;
-            QuickShop.Instance.Update();
-        }
-
-        [ClientCmd("-ttt_quickshop")]
-        public static void CloseQuickshop()
-        {
-            if (QuickShop.Instance == null)
+            else if (Input.Pressed(InputButton.View) && Local.Pawn is TTTPlayer player)
             {
-                return;
-            }
+                if (!(player.Shop?.Accessable() ?? false))
+                {
+                    return;
+                }
 
-            QuickShop.Instance.Enabled = false;
-            QuickShop.Instance.Update();
+                QuickShop.Instance.Enabled = true;
+                QuickShop.Instance.Update();
+            }
         }
     }
 }

@@ -12,7 +12,7 @@ namespace TTTReborn.Teams
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class TeamAttribute : LibraryAttribute
     {
-        public TeamAttribute(string name) : base(name)
+        public TeamAttribute(string name) : base("team_" + name)
         {
 
         }
@@ -32,7 +32,7 @@ namespace TTTReborn.Teams
 
         public TTTTeam()
         {
-            Name = Utils.GetTypeName(GetType());
+            Name = Utils.GetLibraryName(GetType());
 
             Instance = this;
             Teams[Name] = this;
@@ -55,7 +55,7 @@ namespace TTTReborn.Teams
 
             if (!TTTTeam.Teams.TryGetValue(teamname, out TTTTeam team))
             {
-                team = Utils.GetObjectByType<TTTTeam>(Utils.GetTypeByName<TTTTeam>(teamname));
+                team = Utils.GetObjectByType<TTTTeam>(Utils.GetTypeByLibraryName<TTTTeam>(teamname));
             }
 
             return team;

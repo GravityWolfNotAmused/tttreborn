@@ -1,19 +1,13 @@
-MenuHeader {
-    width: 100%;
-    height: 50px;
+.windowheader {
+    padding: 0px;
 
-    flex-direction: row;
-
-    border-radius: 8px 8px 0px 0px;
-
-    background-color: black;
-
-    DragDrop,
-    MenuNavigationHeader {
+    WindowDragHeader,
+    .windownavigationheader {
         width: 100%;
+        height: 100%;
     }
 
-    MenuNavigationHeader {
+    .windownavigationheader {
         .home,
         .previous,
         .next {
@@ -23,7 +17,7 @@ MenuHeader {
             cursor: pointer;
             font-size: 16px;
 
-            &.disabled {
+            &.disable {
                 opacity: 0.1;
             }
         }

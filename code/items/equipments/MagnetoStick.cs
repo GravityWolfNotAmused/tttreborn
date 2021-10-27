@@ -8,14 +8,19 @@ using TTTReborn.Player;
 namespace TTTReborn.Items
 {
     [Library("ttt_magnetostick")]
+    [Equipment(SlotType = SlotType.UtilityEquipment)]
+    [Hammer.Skip]
     partial class MagnetoStick : TTTEquipment
     {
         public override string ViewModelPath => "";
-        public override SlotType SlotType => SlotType.UtilityEquipment;
 
         private static int _grabbingDistance => 80;
         private static int _holdingDistance => 35;
         private static float _maxPropSpeed => 10f;
+        private static float _pushingForce => 600f;
+        private static int _pushingDistance => 50;
+
+        private bool IsUsingMagnetoStick => _heldBody != null || _isAttaching;
 
         private PhysicsBody _holdBody;
         private WeldJoint _holdJoint;
@@ -54,6 +59,11 @@ namespace TTTReborn.Items
                 if (!_holdBody.IsValid())
                 {
                     return;
+                }
+
+                if (Input.Pressed(InputButton.Attack2) && !IsUsingMagnetoStick)
+                {
+                    PushPlayer();
                 }
 
                 if (Input.Down(InputButton.Attack1))
@@ -99,6 +109,20 @@ namespace TTTReborn.Items
                     GrabEnd();
                 }
             }
+        }
+
+        private void PushPlayer()
+        {
+            TraceResult tr = Trace.Ray(Owner.EyePos, Owner.EyePos + Owner.EyeRot.Forward * _pushingDistance)
+                    .Ignore(Owner)
+                    .Run();
+
+            if (!tr.Hit || tr.Entity is not TTTPlayer || !tr.Entity.IsValid())
+            {
+                return;
+            }
+
+            tr.Entity.Velocity += Owner.EyeRot.Forward * _pushingForce;
         }
 
         private void GrabInit(PhysicsBody body, int bone, Vector3 startPos, Vector3 grabPos, Rotation rot)

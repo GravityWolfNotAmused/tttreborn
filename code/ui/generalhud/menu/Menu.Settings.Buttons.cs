@@ -1,7 +1,6 @@
 using System;
 
 using Sandbox;
-using Sandbox.UI;
 using Sandbox.UI.Construct;
 
 using TTTReborn.Globals;
@@ -21,15 +20,15 @@ namespace TTTReborn.UI.Menu
             {
                 if (realm == Utils.Realm.Client)
                 {
-                    return $"/settings/{Utils.GetTypeNameByType(typeof(ClientSettings)).ToLower()}/";
+                    return $"/settings/{Utils.GetTypeName(typeof(ClientSettings)).ToLower()}/";
                 }
                 else
                 {
-                    return $"/settings/{Utils.GetTypeNameByType(typeof(ServerSettings)).ToLower()}/";
+                    return $"/settings/{Utils.GetTypeName(typeof(ServerSettings)).ToLower()}/";
                 }
             }
 
-            return $"/settings/{Utils.GetTypeNameByType(SettingsManager.Instance.GetType()).ToLower()}/";
+            return $"/settings/{Utils.GetTypeName(SettingsManager.Instance.GetType()).ToLower()}/";
         }
 
         private void CreateSettingsButtons(PanelContent menuContent)
@@ -61,7 +60,7 @@ namespace TTTReborn.UI.Menu
 
                 if (SettingsTabs.SelectedTab.Value is Utils.Realm realm && realm == Utils.Realm.Server)
                 {
-                    fileSelection.OnClose = (modal) =>
+                    fileSelection.Header.NavigationHeader.OnClose = (modal) =>
                     {
                         if (ServerSettingsFileSelection != fileSelection)
                         {
@@ -115,7 +114,7 @@ namespace TTTReborn.UI.Menu
             }
             else if (realm == Utils.Realm.Server)
             {
-                ConsoleSystem.Run("ttt_serversettings_saveas_request", fileSelection.CurrentFolderPath, fileName);
+                Player.TTTPlayer.RequestSaveServerSettingsAs(fileSelection.CurrentFolderPath, fileName);
             }
         }
 
@@ -124,7 +123,7 @@ namespace TTTReborn.UI.Menu
             string fullFilePath = folderPath + fileName + SettingFunctions.SETTINGS_FILE_EXTENSION;
 
             DialogBox dialogBox = new DialogBox();
-            dialogBox.TitleLabel.Text = $"Overwrite '{fullFilePath}'";
+            dialogBox.SetTitle($"Overwrite '{fullFilePath}'");
             dialogBox.AddText($"Do you want to overwrite '{fullFilePath}' with the current settings? (If you agree, the settings defined in this file will be lost!)");
             dialogBox.OnAgree = () =>
             {
@@ -144,6 +143,11 @@ namespace TTTReborn.UI.Menu
 
         private void OnAgreeLoadFrom(FileSelection fileSelection, PanelContent menuContent)
         {
+            if (fileSelection.SelectedEntry == null)
+            {
+                return;
+            }
+
             string fileName = fileSelection.SelectedEntry.FileNameLabel.Text;
 
             if (string.IsNullOrEmpty(fileName) || SettingsTabs == null)
@@ -178,7 +182,7 @@ namespace TTTReborn.UI.Menu
             }
             else if (realm == Utils.Realm.Server)
             {
-                ConsoleSystem.Run("ttt_serversettings_loadfrom_request", fileSelection.CurrentFolderPath, fileName);
+                Player.TTTPlayer.RequestLoadFrom(fileSelection.CurrentFolderPath, fileName);
             }
         }
     }
@@ -191,7 +195,7 @@ namespace TTTReborn.Player
     public partial class TTTPlayer
     {
         [ServerCmd(Name = "ttt_serversettings_saveas_request")]
-        public static void RequestSaveAs(string filePath, string fileName, bool overwrite = false)
+        public static void RequestSaveServerSettingsAs(string filePath, string fileName, bool overwrite = false)
         {
             if (!ConsoleSystem.Caller.HasPermission("serversettings"))
             {
@@ -213,7 +217,7 @@ namespace TTTReborn.Player
         {
             Menu.AskOverwriteSelectedSettings(filePath, fileName, () =>
             {
-                ConsoleSystem.Run("ttt_serversettings_saveas_request", filePath, fileName, true);
+                RequestSaveServerSettingsAs(filePath, fileName, true);
             });
         }
 
@@ -247,7 +251,7 @@ namespace TTTReborn.Player
             if (menu != null && menu.Enabled && menu.ServerSettingsTabContent != null)
             {
                 // refresh settings
-                menu.MenuContent.SetPanelContent(menu.OpenSettings);
+                menu.Content.SetPanelContent(menu.OpenSettings);
                 menu.SettingsTabs?.SelectByValue(Utils.Realm.Server);
 
                 menu.ServerSettingsFileSelection?.Close();

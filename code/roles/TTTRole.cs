@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 
 using Sandbox;
 
@@ -14,24 +13,25 @@ namespace TTTReborn.Roles
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class RoleAttribute : LibraryAttribute
     {
-        public RoleAttribute(string name) : base(name)
+        public RoleAttribute(string name) : base("role_" + name)
         {
 
         }
     }
 
-    [Role("Base")]
     public abstract class TTTRole
     {
         public readonly string Name;
 
         public virtual Color Color => Color.Black;
 
-        public abstract Type DefaultTeamType { get; }
+        public virtual Type DefaultTeamType => typeof(NoneTeam);
 
         public virtual int DefaultCredits => 0;
 
         public static Dictionary<string, Shop> ShopDict { get; internal set; } = new();
+
+        public virtual bool IsSelectable => true;
 
         public Shop Shop
         {
@@ -49,19 +49,11 @@ namespace TTTReborn.Roles
 
         public TTTRole()
         {
-            Name = Utils.GetTypeName(GetType());
+            Name = Utils.GetLibraryName(GetType());
 
             if (TeamFunctions.GetTeamByType(DefaultTeamType) == null)
             {
                 Utils.GetObjectByType<TTTTeam>(DefaultTeamType);
-            }
-
-            using (Prediction.Off())
-            {
-                if (!ShopDict.ContainsKey(Name))
-                {
-                    InitShop();
-                }
             }
         }
 

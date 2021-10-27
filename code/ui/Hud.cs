@@ -17,7 +17,7 @@ namespace TTTReborn.UI
 
         public Hud()
         {
-            if (!IsClient)
+            if (Host.IsServer)
             {
                 return;
             }
@@ -30,23 +30,27 @@ namespace TTTReborn.UI
         [Event.Hotload]
         public static void OnHotReloaded()
         {
-            if (Host.IsClient)
+            if (Host.IsServer)
             {
-                Local.Hud?.Delete();
-
-                Hud hud = new();
-
-                if (Local.Client.Pawn is TTTPlayer player)
-                {
-                    Current.AliveHudInstance.Enabled = player.LifeState == LifeState.Alive && !player.IsForcedSpectator;
-                }
+                return;
             }
+
+            Hud.Current?.Delete();
+
+            Hud hud = new();
+
+            if (Local.Client.Pawn is TTTPlayer player)
+            {
+                Current.AliveHudInstance.Enabled = player.LifeState == LifeState.Alive && !player.IsForcedSpectator;
+            }
+
+            Event.Run(TTTEvent.UI.Reloaded);
         }
 
         [Event(TTTEvent.Player.Spawned)]
         private void OnPlayerSpawned(TTTPlayer player)
         {
-            if (player != Local.Client.Pawn)
+            if (IsServer || player != Local.Client.Pawn)
             {
                 return;
             }
@@ -70,7 +74,9 @@ namespace TTTReborn.UI
             public GeneralHud()
             {
                 AddClass("fullscreen");
+                AddChild<WIPDisclaimer>();
 
+                AddChild<HintDisplay>();
                 AddChild<RadarDisplay>();
                 AddChild<PlayerRoleDisplay>();
                 AddChild<PlayerInfoDisplay>();
@@ -128,7 +134,8 @@ namespace TTTReborn.UI
                     _rootPanel.AddChild<BreathIndicator>(),
                     _rootPanel.AddChild<StaminaIndicator>(),
                     _rootPanel.AddChild<QuickShop>(),
-                    _rootPanel.AddChild<DamageIndicator>()
+                    _rootPanel.AddChild<DamageIndicator>(),
+                    _rootPanel.AddChild<C4Arm>()
                 };
             }
 

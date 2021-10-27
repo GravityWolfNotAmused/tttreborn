@@ -1,15 +1,15 @@
-using Hammer;
-
 using Sandbox;
 
 namespace TTTReborn.Items
 {
     [Library("ttt_pistol")]
-    [EditorModel("weapons/rust_pistol/rust_pistol.vmdl")]
-    partial class Pistol : TTTWeapon, IBuyableItem
+    [Weapon(SlotType = SlotType.Secondary, AmmoType = "pistol")]
+    [Spawnable]
+    [Buyable(Price = 100)]
+    [Hammer.EditorModel("weapons/rust_pistol/rust_pistol.vmdl")]
+    public partial class Pistol : TTTWeapon
     {
         public override string ViewModelPath => "weapons/rust_pistol/v_rust_pistol.vmdl";
-        public override SlotType SlotType => SlotType.Secondary;
         public override bool UnlimitedAmmo => true;
         public override int ClipSize => 15;
         public override float PrimaryRate => 15.0f;
@@ -17,8 +17,6 @@ namespace TTTReborn.Items
         public override float ReloadTime => 2.3f;
         public override float DeployTime => 0.4f;
         public override int BaseDamage => 8;
-
-        public virtual int Price => 100;
 
         public override void Spawn()
         {

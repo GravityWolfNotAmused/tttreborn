@@ -1,12 +1,17 @@
+using System.Linq;
+
 using Sandbox;
 
 using TTTReborn.Events;
 using TTTReborn.Globals;
+using TTTReborn.Items;
 using TTTReborn.Player.Camera;
 using TTTReborn.Roles;
 
 namespace TTTReborn.Player
 {
+    using System.Collections.Generic;
+
     public partial class TTTPlayer : Sandbox.Player
     {
         private static int CarriableDropVelocity { get; set; } = 300;
@@ -57,7 +62,7 @@ namespace TTTReborn.Player
                 {
                     if (isPostRound || player.IsConfirmed)
                     {
-                        RPCs.ClientSetRole(To.Single(this), player, player.Role.Name);
+                        player.SendClientRole(To.Single(this));
                     }
                 }
 
@@ -92,8 +97,10 @@ namespace TTTReborn.Player
 
             using (Prediction.Off())
             {
+                Event.Run(TTTEvent.Player.Spawned, this);
+
                 RPCs.ClientOnPlayerSpawned(this);
-                RPCs.ClientSetRole(To.Single(this), this, Role.Name);
+                SendClientRole();
             }
 
             base.Respawn();
@@ -136,7 +143,7 @@ namespace TTTReborn.Player
 
             BecomePlayerCorpseOnServer(_lastDamageInfo.Force, GetHitboxBone(_lastDamageInfo.HitboxIndex));
 
-            Inventory.DropActive();
+            Inventory.DropAll();
             Inventory.DeleteContents();
 
             ShowFlashlight(false, false);
@@ -174,6 +181,7 @@ namespace TTTReborn.Player
             }
 
             TickAttemptInspectPlayerCorpse();
+            TickEntityHints();
 
             if (LifeState != LifeState.Alive)
             {
@@ -190,11 +198,13 @@ namespace TTTReborn.Player
 
             SimulateActiveChild(client, ActiveChild);
 
+            TickC4Simulate();
             TickItemSimulate();
             TickPlayerUse();
             TickPlayerDropCarriable();
             TickPlayerFlashlight();
-            TickEntityHints();
+            TickPlayerShop();
+            TickRoleButtonActivate();
 
             PawnController controller = GetActiveController();
             controller?.Simulate(client, this, GetActiveAnimator());
@@ -217,7 +227,7 @@ namespace TTTReborn.Player
 
         private void TickPlayerDropCarriable()
         {
-            if (Input.Pressed(InputButton.Drop) && ActiveChild != null && Inventory != null)
+            if (Input.Pressed(InputButton.Drop) && !Input.Down(InputButton.Run) && ActiveChild != null && Inventory != null)
             {
                 Entity droppedEntity = Inventory.DropActive();
 
@@ -265,6 +275,14 @@ namespace TTTReborn.Player
             for (int i = 0; i < perks.Count(); i++)
             {
                 perks.Get(i).Simulate(Client);
+            }
+        }
+
+        private void TickC4Simulate()
+        {
+            foreach (C4Entity c4 in All.Where(x => x is C4Entity))
+            {
+                c4.Simulate(Client);
             }
         }
 

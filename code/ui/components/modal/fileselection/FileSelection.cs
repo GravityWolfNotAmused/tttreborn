@@ -44,25 +44,31 @@ namespace TTTReborn.UI
 
         public string CurrentFolderPath = DEFAULT_SELECTION_PATH;
 
-        private readonly Sandbox.UI.Panel _selectionPanel;
-        public readonly TextEntry FileNameEntry;
+        public PanelContent EntryPanelContent;
+        public TextEntry FileNameEntry;
 
-        public FileSelection() : base()
+        public FileSelection(Sandbox.UI.Panel parent = null) : base(parent)
         {
-            HeaderPanel.IsLocked = false;
-            HeaderPanel.IsFreeDraggable = true;
+            Header.DragHeader.IsLocked = false;
+            Header.DragHeader.IsFreeDraggable = true;
 
             StyleSheet.Load("/ui/components/modal/fileselection/FileSelection.scss");
 
-            TitleLabel.Text = DefaultSelectionPath;
+            SetTitle(DefaultSelectionPath);
 
             OnDecline = () => Close();
 
-            _selectionPanel = ContentPanel.Add.Panel("selection");
+            EntryPanelContent = new(Content);
+            EntryPanelContent.AddClass("selection");
 
-            FileNameEntry = ContentPanel.Add.TextEntry("");
+            FileNameEntry = Content.Add.TextEntry("");
             FileNameEntry.AddClass("filename");
             FileNameEntry.AddClass("hide");
+            FileNameEntry.AddEventListener("onfocus", (panelEvent) =>
+            {
+                SelectedEntry?.SetClass("selected", false);
+                SelectedEntry = null;
+            });
         }
 
         public void EnableFileNameEntry(bool enable = true)
@@ -79,57 +85,58 @@ namespace TTTReborn.UI
 
         public void CreateTreeView(string path)
         {
+            FileNameEntry.Text = "";
+
             CurrentFolderPath = path;
-            TitleLabel.Text = path;
+            SetTitle(path);
             SelectedEntry = null;
 
-            _selectionPanel.DeleteChildren(true);
-
-            if (!path.Equals("/"))
+            EntryPanelContent.SetPanelContent((panelContent) =>
             {
-                FileSelectionEntry fileSelectionEntry = _selectionPanel.Add.FileSelectionEntry("../", "folder");
-                fileSelectionEntry.SetFileSelection(this);
-                fileSelectionEntry.IsFolder = true;
-            }
+                if (!path.Equals("/"))
+                {
+                    FileSelectionEntry fileSelectionEntry = panelContent.Add.FileSelectionEntry("../", "folder");
+                    fileSelectionEntry.SetFileSelection(this);
+                    fileSelectionEntry.IsFolder = true;
+                }
 
-            IEnumerable<string> folders;
+                IEnumerable<string> folders;
 
-            if (IsDataFolder)
-            {
-                folders = FileSystem.Data.FindDirectory(path);
-            }
-            else
-            {
-                folders = FileSystem.Mounted.FindDirectory(path);
-            }
+                if (IsDataFolder)
+                {
+                    folders = FileSystem.Data.FindDirectory(path);
+                }
+                else
+                {
+                    folders = FileSystem.Mounted.FindDirectory(path);
+                }
 
-            foreach (string folder in folders)
-            {
-                FileSelectionEntry fileSelectionEntry = _selectionPanel.Add.FileSelectionEntry(Path.GetDirectoryName(folder + "/") + "/", "folder");
-                fileSelectionEntry.SetFileSelection(this);
-                fileSelectionEntry.IsFolder = true;
-            }
+                foreach (string folder in folders)
+                {
+                    FileSelectionEntry fileSelectionEntry = panelContent.Add.FileSelectionEntry(Path.GetDirectoryName(folder + "/") + "/", "folder");
+                    fileSelectionEntry.SetFileSelection(this);
+                    fileSelectionEntry.IsFolder = true;
+                }
 
-            if (FolderOnly)
-            {
-                return;
-            }
+                if (!FolderOnly)
+                {
+                    IEnumerable<string> files;
 
-            IEnumerable<string> files;
+                    if (IsDataFolder)
+                    {
+                        files = FileSystem.Data.FindFile(path, DefaultSelectionFileType);
+                    }
+                    else
+                    {
+                        files = FileSystem.Mounted.FindFile(path, DefaultSelectionFileType);
+                    }
 
-            if (IsDataFolder)
-            {
-                files = FileSystem.Data.FindFile(path, DefaultSelectionFileType);
-            }
-            else
-            {
-                files = FileSystem.Mounted.FindFile(path, DefaultSelectionFileType);
-            }
-
-            foreach (string file in files)
-            {
-                _selectionPanel.Add.FileSelectionEntry(Path.GetFileName(file), GetIconByFileType(Path.GetExtension(file))).SetFileSelection(this);
-            }
+                    foreach (string file in files)
+                    {
+                        panelContent.Add.FileSelectionEntry(Path.GetFileName(file), GetIconByFileType(Path.GetExtension(file))).SetFileSelection(this);
+                    }
+                }
+            });
         }
 
         public void OnSelect(FileSelectionEntry fileSelectionEntry)
@@ -149,10 +156,11 @@ namespace TTTReborn.UI
 
         public void OnConfirm(FileSelectionEntry fileSelectionEntry)
         {
-            if (!fileSelectionEntry.IsFolder || FolderOnly)
+            if (fileSelectionEntry == null || !fileSelectionEntry.IsFolder || FolderOnly)
             {
                 OnSelectEntry?.Invoke(fileSelectionEntry);
-                OnAgree?.Invoke();
+
+                base.OnClickAgree();
             }
             else // go deeper
             {
@@ -176,19 +184,7 @@ namespace TTTReborn.UI
 
         public override void OnClickAgree()
         {
-            if (SelectedEntry != null)
-            {
-                if (!FolderOnly && SelectedEntry.IsFolder)
-                {
-                    OnConfirm(SelectedEntry);
-
-                    return;
-                }
-
-                OnSelectEntry?.Invoke(SelectedEntry);
-            }
-
-            base.OnClickAgree();
+            OnConfirm(SelectedEntry);
         }
 
         public static string GetIconByFileType(string fileType)
@@ -214,7 +210,7 @@ namespace Sandbox.UI.Construct
     {
         public static FileSelection FileSelection(this PanelCreator self, string path = null, string fileType = null)
         {
-            FileSelection fileSelectionEntry = self.panel.AddChild<FileSelection>();
+            FileSelection fileSelectionEntry = new(self.panel);
             fileSelectionEntry.DefaultSelectionPath = path;
             fileSelectionEntry.DefaultSelectionFileType = fileType;
 

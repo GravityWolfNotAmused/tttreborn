@@ -15,7 +15,7 @@ namespace TTTReborn.UI
         private Panel _staminaBar;
         private Label _staminaLabel;
 
-        public StaminaIndicator()
+        public StaminaIndicator() : base()
         {
             Instance = this;
 
@@ -32,6 +32,9 @@ namespace TTTReborn.UI
             _staminaLabel.AddClass("stamina-label");
 
             Enabled = true;
+
+            Style.ZIndex = -1;
+            Style.Dirty();
         }
 
         public override void Tick()

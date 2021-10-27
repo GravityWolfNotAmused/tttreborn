@@ -14,7 +14,8 @@ using TTTReborn.UI;
 
 namespace TTTReborn.Gamemode
 {
-    [Library("tttreborn", Title = "Trouble in Terry's Town"), Hammer.Skip]
+    [Hammer.Skip]
+    [Library("tttreborn", Title = "Trouble in Terry's Town")]
     partial class Game : Sandbox.Game
     {
         public static Game Instance { get; private set; }
@@ -30,13 +31,15 @@ namespace TTTReborn.Gamemode
         {
             Instance = this;
 
-            TTTLanguage.LoadLanguages();
+            TTTLanguage.Load();
             SettingsManager.Load();
 
             if (IsServer)
             {
                 ShopManager.Load();
-
+            }
+            else
+            {
                 new Hud();
             }
         }
@@ -78,7 +81,10 @@ namespace TTTReborn.Gamemode
 
         public override void DoPlayerSuicide(Client client)
         {
-            base.DoPlayerSuicide(client);
+            if (client.Pawn is TTTPlayer player && player.LifeState == LifeState.Alive)
+            {
+                base.DoPlayerSuicide(client);
+            }
         }
 
         public override void OnKilled(Entity entity)

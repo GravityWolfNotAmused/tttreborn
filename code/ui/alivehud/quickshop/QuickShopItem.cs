@@ -10,17 +10,14 @@ namespace TTTReborn.UI
     public partial class QuickShopItem : Panel
     {
         public ShopItemData ItemData;
+        public bool IsDisabled = false;
 
         private Panel _itemIcon;
         private Label _itemNameLabel;
         private Label _itemPriceLabel;
 
-        public bool IsDisabled = false;
-
         public QuickShopItem(Sandbox.UI.Panel parent) : base(parent)
         {
-            Parent = parent;
-
             AddClass("rounded");
             AddClass("text-shadow");
             AddClass("background-color-secondary");
@@ -36,21 +33,14 @@ namespace TTTReborn.UI
             _itemNameLabel.AddClass("item-name-label");
         }
 
-        public void SetItem(ShopItemData buyableItemData)
+        public void SetItem(ShopItemData shopItemData)
         {
-            ItemData = buyableItemData;
+            ItemData = shopItemData;
 
-            _itemNameLabel.Text = $"{buyableItemData.Name}";
-            _itemPriceLabel.Text = $"${buyableItemData.Price}";
+            _itemNameLabel.Text = $"{shopItemData.Name}";
+            _itemPriceLabel.Text = $"${shopItemData.Price}";
 
-            Texture icon = Texture.Load($"/ui/weapons/{buyableItemData.Name}.png", false);
-            icon ??= Texture.Load($"/ui/none.png");
-
-            _itemIcon.Style.Background = new PanelBackground
-            {
-                Texture = icon
-            };
-
+            _itemIcon.Style.BackgroundImage = Texture.Load($"/ui/weapons/{shopItemData.Name}.png", false) ?? Texture.Load($"/ui/none.png");
             _itemIcon.Style.Dirty();
         }
 
